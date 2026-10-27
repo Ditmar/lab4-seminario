@@ -41,6 +41,22 @@ describe('calculatePricing', () => {
       expect(errorCodeOf(() => calculatePricing([line(SLEEVE, 1)], 'SAVE10 FREESHIP'))).toBe('INVALID_COUPON')
       expect(errorCodeOf(() => calculatePricing([line(SLEEVE, 1)], 'SAVE10,FREESHIP'))).toBe('INVALID_COUPON')
     })
+
+    // ACTIVIDAD 3 - NUEVA PRUEBA UNITARIA
+    it('calcula el descuento y el envio gratis al comprar uno de cada producto con SAVE10', () => {
+      const cart = [
+        line(SLEEVE, 1),
+        line(MOUSE, 1),
+        line(KEYBOARD, 1),
+      ]
+
+      const pricing = calculatePricing(cart, 'SAVE10')
+
+      expect(pricing.subtotalCents).toBe(11500)
+      expect(pricing.discountCents).toBe(1150)
+      expect(pricing.shippingCents).toBe(0)
+      expect(pricing.totalCents).toBe(10350)
+    })
   })
 
   describe('envío', () => {
@@ -76,6 +92,7 @@ describe('calculatePricing', () => {
 
       // Sin cupón llega a $100.00 → envío gratis.
       expect(calculatePricing(cart).shippingCents).toBe(0)
+
       // Con SAVE10 baja a $99.00 → ya no llega al umbral → se cobra el envío.
       const withCoupon = calculatePricing(cart, 'SAVE10')
       expect(withCoupon.shippingCents).toBe(500)
@@ -109,6 +126,7 @@ describe('calculatePricing', () => {
       for (const invalid of [0, -1, 1.5, Number.NaN, 100]) {
         expect(errorCodeOf(() => calculatePricing([line(MOUSE, invalid)]))).toBe('INVALID_QUANTITY')
       }
+
       // Valores límite válidos
       expect(calculatePricing([line(MOUSE, 1)]).subtotalCents).toBe(2500)
       expect(calculatePricing([line(MOUSE, 99)]).subtotalCents).toBe(247500)
