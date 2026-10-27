@@ -36,7 +36,6 @@ describe('calculatePricing', () => {
       expect(discountFor(99)).toBe(10) // 9.9 → 10
     })
 
-    // ← TU PRUEBA
     it('SAVE10 sobre 1 de cada producto ($115.00) descuenta $11.50 y conserva el envío gratis porque queda en $103.50', () => {
       // $30.00 + $25.00 + $60.00 = $115.00 → 10% = $11.50 → $103.50 sigue siendo ≥ $100.00
       const pricing = calculatePricing([line(SLEEVE, 1), line(MOUSE, 1), line(KEYBOARD, 1)], 'SAVE10')
