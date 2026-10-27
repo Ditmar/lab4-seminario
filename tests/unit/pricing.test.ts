@@ -35,6 +35,18 @@ describe('calculatePricing', () => {
       expect(discountFor(15)).toBe(2) // 1.5 → 2 (mitad hacia arriba)
       expect(discountFor(99)).toBe(10) // 9.9 → 10
     })
+    it('SAVE10 sobre 1 de cada producto ($115.00) descuenta $11.50 y el envío sigue gratis porque queda en $103.50', () => {
+  // subtotal = 3000 + 2500 + 6000 = 11500
+  // descuento = 10% de 11500 = 1150
+  // después del descuento = 10350 (>= 10000) → envío gratis
+  // total = 11500 - 1150 + 0 = 10350
+  const pricing = calculatePricing([line(SLEEVE, 1), line(MOUSE, 1), line(KEYBOARD, 1)], 'SAVE10')
+
+  expect(pricing.subtotalCents).toBe(11500)
+  expect(pricing.discountCents).toBe(1150)
+  expect(pricing.shippingCents).toBe(0)
+  expect(pricing.totalCents).toBe(10350)
+})
 
     it('rechaza cupones inexistentes y no permite combinar cupones en un solo código', () => {
       expect(errorCodeOf(() => calculatePricing([line(SLEEVE, 1)], 'DESCUENTO50'))).toBe('INVALID_COUPON')
