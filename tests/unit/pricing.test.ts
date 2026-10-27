@@ -83,6 +83,7 @@ describe('calculatePricing', () => {
     })
   })
 
+
   describe('total', () => {
     it('total = subtotal − descuento + envío (ejemplo del enunciado: $59.00)', () => {
       expect(calculatePricing([line(SLEEVE, 2)], 'SAVE10')).toEqual({
@@ -92,7 +93,25 @@ describe('calculatePricing', () => {
         totalCents: 5900,
       })
     })
+
+    it('calcula correctamente el total de tres productos con SAVE10', () => {
+      const cart = [
+        line(SLEEVE, 1),
+        line(MOUSE, 1),
+        line(KEYBOARD, 1),
+      ]
+
+      const pricing = calculatePricing(cart, 'SAVE10')
+
+      expect(pricing).toEqual({
+        subtotalCents: 11500,
+        discountCents: 1150,
+        shippingCents: 0,
+        totalCents: 10350,
+      })
+    })
   })
+
 
   describe('carrito vacío', () => {
     it('no tiene importes ni cobra envío, con o sin cupón', () => {

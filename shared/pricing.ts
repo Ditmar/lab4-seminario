@@ -1,75 +1,116 @@
+
 import { PRODUCTS } from './catalog'
 import { PricingError } from './errors'
-import { FREE_SHIPPING_THRESHOLD_CENTS, MAX_QUANTITY, SHIPPING_COST_CENTS, normalizeCouponCode } from './rules'
+import {
+  FREE_SHIPPING_THRESHOLD_CENTS,
+  MAX_QUANTITY,
+  SHIPPING_COST_CENTS,
+  normalizeCouponCode,
+} from './rules'
 import type { CartItem, PriceBreakdown, Product } from './types'
 
-// VERSIÓN A (antes del refactor): funciona correctamente, pero es difícil de leer y mantener.
+// Valida las cantidades y calcula el subtotal del carrito.
+function calculateSubtotal(
+  items: CartItem[],
+  catalog: readonly Product[],
+): number {
+  let subtotal = 0
+
+  for (const item of items) {
+    if (
+      !Number.isInteger(item.quantity) ||
+      item.quantity <= 0 ||
+      item.quantity > MAX_QUANTITY
+    ) {
+      throw new PricingError(
+        'INVALID_QUANTITY',
+        'La cantidad debe ser un entero entre 1 y ' + MAX_QUANTITY + '.',
+      )
+    }
+
+    let price = -1
+
+    for (const product of catalog) {
+      if (product.id === item.productId) {
+        price = product.priceCents
+      }
+    }
+
+    if (price < 0) {
+      throw new PricingError(
+        'UNKNOWN_PRODUCT',
+        'El producto "' + item.productId + '" no existe.',
+      )
+    }
+
+    subtotal += price * item.quantity
+  }
+
+  return subtotal
+}
+
+// Procesa el cupon y determina el descuento y envio gratis.
+function calculateCoupon(
+  couponCode: string | null | undefined,
+  subtotal: number,
+): { discount: number; freeShipping: boolean } {
+  const code = couponCode == null ? '' : normalizeCouponCode(couponCode)
+
+  if (code === '') {
+    return { discount: 0, freeShipping: false }
+  }
+
+  if (code === 'SAVE10') {
+    return {
+      discount: subtotal > 0
+        ? Math.floor((subtotal * 10 + 50) / 100)
+        : 0,
+      freeShipping: false,
+    }
+  }
+
+  if (code === 'FREESHIP') {
+    return { discount: 0, freeShipping: true }
+  }
+
+  throw new PricingError(
+    'INVALID_COUPON',
+    'El cupón "' + couponCode!.trim() + '" no es válido.',
+  )
+}
+
+// Calcula el envio segun el total y el cupon aplicado.
+function calculateShipping(
+  subtotal: number,
+  discount: number,
+  freeShipping: boolean,
+): number {
+  if (subtotal === 0 || freeShipping) {
+    return 0
+  }
+
+  if (subtotal - discount >= FREE_SHIPPING_THRESHOLD_CENTS) {
+    return 0
+  }
+
+  return SHIPPING_COST_CENTS
+}
+
+// Coordina los calculos y devuelve el desglose de precios.
 export function calculatePricing(
   items: CartItem[],
   couponCode?: string | null,
   catalog: readonly Product[] = PRODUCTS,
 ): PriceBreakdown {
-  let subtotal = 0
-  let discount = 0
-  let shipping: number
-  let freeShippingCoupon = false
-
-  if (items.length > 0) {
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i]
-      if (Number.isInteger(item.quantity) && item.quantity > 0 && item.quantity <= MAX_QUANTITY) {
-        let price = -1
-        for (let j = 0; j < catalog.length; j++) {
-          if (catalog[j].id === item.productId) {
-            price = catalog[j].priceCents
-          }
-        }
-        if (price >= 0) {
-          subtotal = subtotal + price * item.quantity
-        } else {
-          throw new PricingError('UNKNOWN_PRODUCT', 'El producto "' + item.productId + '" no existe.')
-        }
-      } else {
-        throw new PricingError('INVALID_QUANTITY', 'La cantidad debe ser un entero entre 1 y ' + MAX_QUANTITY + '.')
-      }
-    }
-  }
-
-  if (couponCode !== undefined && couponCode !== null && normalizeCouponCode(couponCode) !== '') {
-    if (normalizeCouponCode(couponCode) === 'SAVE10') {
-      if (subtotal > 0) {
-        // 10% del subtotal, redondeado al centavo más cercano (mitades hacia arriba).
-        discount = Math.floor((subtotal * 10 + 50) / 100)
-      }
-    } else {
-      if (normalizeCouponCode(couponCode) === 'FREESHIP') {
-        freeShippingCoupon = true
-      } else {
-        throw new PricingError('INVALID_COUPON', 'El cupón "' + couponCode.trim() + '" no es válido.')
-      }
-    }
-  }
-
-  if (subtotal === 0) {
-    shipping = 0
-  } else {
-    if (freeShippingCoupon) {
-      shipping = 0
-    } else {
-      if (subtotal - discount >= FREE_SHIPPING_THRESHOLD_CENTS) {
-        shipping = 0
-      } else {
-        shipping = SHIPPING_COST_CENTS
-      }
-    }
-  }
-
-  const total = subtotal - discount + shipping
+  const subtotal = calculateSubtotal(items, catalog)
+  const { discount, freeShipping } = calculateCoupon(couponCode, subtotal)
+  const shipping = calculateShipping(subtotal, discount, freeShipping)
 
   return {
     subtotalCents: subtotal,
     discountCents: discount,
     shippingCents: shipping,
-    totalCents: total,
+    totalCents: subtotal - discount + shipping,
   }
 }
+
