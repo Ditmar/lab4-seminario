@@ -36,6 +36,16 @@ describe('calculatePricing', () => {
       expect(discountFor(99)).toBe(10) // 9.9 → 10
     })
 
+    it('un carrito con cada producto aun tiene envio gratis porque con el cupon SAVE10 el precio supera los 100$', () => {
+      // $30.00 + $25.00 + $60.00 = $115.00 | descuento de cupon SAVE10 = $11.50 | TOTAL= $103.50 ≥ $100.00
+      const pricing = calculatePricing([line(SLEEVE, 1), line(MOUSE, 1), line(KEYBOARD, 1)], 'SAVE10')
+
+      expect(pricing.subtotalCents).toBe(11500)
+      expect(pricing.discountCents).toBe(1150)
+      expect(pricing.shippingCents).toBe(0)
+      expect(pricing.totalCents).toBe(10350)
+    })
+
     it('rechaza cupones inexistentes y no permite combinar cupones en un solo código', () => {
       expect(errorCodeOf(() => calculatePricing([line(SLEEVE, 1)], 'DESCUENTO50'))).toBe('INVALID_COUPON')
       expect(errorCodeOf(() => calculatePricing([line(SLEEVE, 1)], 'SAVE10 FREESHIP'))).toBe('INVALID_COUPON')
