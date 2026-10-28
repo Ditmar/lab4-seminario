@@ -41,6 +41,19 @@ describe('calculatePricing', () => {
       expect(errorCodeOf(() => calculatePricing([line(SLEEVE, 1)], 'SAVE10 FREESHIP'))).toBe('INVALID_COUPON')
       expect(errorCodeOf(() => calculatePricing([line(SLEEVE, 1)], 'SAVE10,FREESHIP'))).toBe('INVALID_COUPON')
     })
+    it('SAVE10 descuenta el 10% de un carrito mixto y el envío sigue gratis si el subtotal con descuento queda en $100.00 o más', () => {
+      // 1 × $30.00 + 1 × $25.00 + 1 × $60.00 = $115.00
+      // Descuento: 10% de $115.00 = $11.50 → queda en $103.50, que aún llega a $100.00
+      const pricing = calculatePricing([line(SLEEVE, 1), line(MOUSE, 1), line(KEYBOARD, 1)], 'SAVE10')
+
+      expect(pricing).toEqual({
+        subtotalCents: 11500,
+        discountCents: 1150,
+        shippingCents: 0,
+        totalCents: 10350,
+      })
+    })
+  
   })
 
   describe('envío', () => {
