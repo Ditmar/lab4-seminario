@@ -70,6 +70,16 @@ describe('calculatePricing', () => {
       expect(pricing.totalCents).toBe(2500)
     })
 
+    it('FREESHIP con 2 Mechanical Keyboard: sin descuento, envío gratis y total igual al subtotal', () => {
+      // 2 × $60.00 = $120.00 → 12000 centavos
+      const pricing = calculatePricing([line(KEYBOARD, 2)], 'FREESHIP')
+
+      expect(pricing.subtotalCents).toBe(12000)
+      expect(pricing.discountCents).toBe(0)
+      expect(pricing.shippingCents).toBe(0)
+      expect(pricing.totalCents).toBe(12000)
+    })
+
     it('evalúa el umbral de envío gratis DESPUÉS de aplicar el descuento', () => {
       // 2 × $30.00 + 2 × $25.00 = $110.00
       const cart = [line(SLEEVE, 2), line(MOUSE, 2)]
