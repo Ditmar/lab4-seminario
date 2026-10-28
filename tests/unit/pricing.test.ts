@@ -92,6 +92,15 @@ describe('calculatePricing', () => {
         totalCents: 5900,
       })
     })
+
+    it('aplica 10% de descuento con SAVE10 y otorga envío gratis al superar los $100 netos comprando 1 de cada producto', () => {
+      const pricing = calculatePricing([line(SLEEVE, 1), line(MOUSE, 1), line(KEYBOARD, 1)], 'SAVE10')
+
+      expect(pricing.subtotalCents).toBe(11500)
+      expect(pricing.discountCents).toBe(1150)
+      expect(pricing.shippingCents).toBe(0)
+      expect(pricing.totalCents).toBe(10350)
+    })
   })
 
   describe('carrito vacío', () => {
