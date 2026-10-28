@@ -118,4 +118,21 @@ describe('calculatePricing', () => {
       expect(errorCodeOf(() => calculatePricing([line('no-existe', 1)]))).toBe('UNKNOWN_PRODUCT')
     })
   })
+
+  it('aplica SAVE10 a un producto de cada tipo y mantiene el envío gratis', () => {
+    // 3000 + 2500 + 6000 = 11500; descuento = 1150.
+    // 11500 - 1150 = 10350: supera el umbral de 10000.
+    const pricing = calculatePricing(
+      [line(SLEEVE, 1), line(MOUSE, 1), line(KEYBOARD, 1)],
+      'SAVE10',
+    )
+  
+    expect(pricing).toEqual({
+      subtotalCents: 11500,
+      discountCents: 1150,
+      shippingCents: 0,
+      totalCents: 10350,
+    })
+  })
 })
+
