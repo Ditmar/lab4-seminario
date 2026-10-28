@@ -18,6 +18,19 @@ describe('calculatePricing', () => {
   })
 
   describe('descuento con cupón SAVE10', () => {
+    it('descuenta 10% de un producto de cada tipo y conserva el envío gratis sobre $100 después del descuento', () => {
+      // $30 + $25 + $60 = $115; descuento $11.50; importe final $103.50.
+      const pricing = calculatePricing(
+        [line(SLEEVE, 1), line(MOUSE, 1), line(KEYBOARD, 1)],
+        'SAVE10',
+      )
+
+      expect(pricing.subtotalCents).toBe(11500)
+      expect(pricing.discountCents).toBe(1150)
+      expect(pricing.shippingCents).toBe(0)
+      expect(pricing.totalCents).toBe(10350)
+    })
+
     it('descuenta el 10% del subtotal (2 Laptop Sleeve = $60.00 → -$6.00), sin importar mayúsculas ni espacios', () => {
       expect(calculatePricing([line(SLEEVE, 2)], 'SAVE10').discountCents).toBe(600)
       expect(calculatePricing([line(SLEEVE, 2)], '  save10 ').discountCents).toBe(600)
