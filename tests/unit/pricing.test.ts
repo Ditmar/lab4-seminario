@@ -23,6 +23,15 @@ describe('calculatePricing', () => {
       expect(calculatePricing([line(SLEEVE, 2)], '  save10 ').discountCents).toBe(600)
     })
 
+    it('aplica SAVE10 al subtotal de los tres productos y mantiene el envío gratis', () => {
+      const pricing = calculatePricing([line(SLEEVE, 1), line(MOUSE, 1), line(KEYBOARD, 1)], 'SAVE10')
+
+      expect(pricing.subtotalCents).toBe(11500)
+      expect(pricing.discountCents).toBe(1150)
+      expect(pricing.shippingCents).toBe(0)
+      expect(pricing.totalCents).toBe(10350)
+    })
+
     it('redondea el descuento al centavo más cercano, con las mitades hacia arriba', () => {
       // Producto de 1 centavo: la cantidad coincide con el subtotal en centavos.
       const oneCent: Product[] = [{ id: 'cent', name: 'Centavo', priceCents: 1 }]
