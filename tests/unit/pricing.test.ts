@@ -81,6 +81,16 @@ describe('calculatePricing', () => {
       expect(withCoupon.shippingCents).toBe(500)
       expect(withCoupon.totalCents).toBe(10400)
     })
+
+    it('mantiene el envío gratis si el subtotal con SAVE10 sigue llegando a $100.00 (1 de cada producto → $103.50)', () => {
+      // $30.00 + $25.00 + $60.00 = $115.00 → -$11.50 → $103.50 ≥ $100.00 → envío gratis.
+      expect(calculatePricing([line(SLEEVE, 1), line(MOUSE, 1), line(KEYBOARD, 1)], 'SAVE10')).toEqual({
+        subtotalCents: 11500,
+        discountCents: 1150,
+        shippingCents: 0,
+        totalCents: 10350,
+      })
+    })
   })
 
   describe('total', () => {
