@@ -41,6 +41,18 @@ describe('calculatePricing', () => {
       expect(errorCodeOf(() => calculatePricing([line(SLEEVE, 1)], 'SAVE10 FREESHIP'))).toBe('INVALID_COUPON')
       expect(errorCodeOf(() => calculatePricing([line(SLEEVE, 1)], 'SAVE10,FREESHIP'))).toBe('INVALID_COUPON')
     })
+
+    it('con un producto de cada tipo y SAVE10, el descuento llega al umbral de envío gratis', () => {
+      const pricing = calculatePricing(
+        [line(SLEEVE, 1), line(MOUSE, 1), line(KEYBOARD, 1)],
+        'SAVE10',
+      )
+
+      expect(pricing.subtotalCents).toBe(11500)
+      expect(pricing.discountCents).toBe(1150)
+      expect(pricing.shippingCents).toBe(0)
+      expect(pricing.totalCents).toBe(10350)
+    })
   })
 
   describe('envío', () => {
