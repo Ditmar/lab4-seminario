@@ -44,6 +44,17 @@ describe('calculatePricing', () => {
   })
 
   describe('envío', () => {
+    it('con un producto de cada tipo y SAVE10 mantiene el envío gratis y totaliza $103.50', () => {
+      // A mano: 3000 + 2500 + 6000 = 11500; 10% = 1150.
+      // Después del descuento: 10350 >= 10000, por eso el envío es 0.
+      expect(calculatePricing([line(SLEEVE, 1), line(MOUSE, 1), line(KEYBOARD, 1)], 'SAVE10')).toEqual({
+        subtotalCents: 11500,
+        discountCents: 1150,
+        shippingCents: 0,
+        totalCents: 10350,
+      })
+    })
+
     it('cobra $5.00 cuando el subtotal es menor a $100.00 y no hay cupón', () => {
       const pricing = calculatePricing([line(SLEEVE, 1)])
 
