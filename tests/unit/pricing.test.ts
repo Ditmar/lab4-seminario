@@ -36,6 +36,15 @@ describe('calculatePricing', () => {
       expect(discountFor(99)).toBe(10) // 9.9 → 10
     })
 
+    it('con 1 de cada producto y SAVE10 descuenta $11.50 y, como quedan $103.50 (≥ $100.00), el envío es gratis', () => {
+      expect(calculatePricing([line(SLEEVE, 1), line(MOUSE, 1), line(KEYBOARD, 1)], 'SAVE10')).toEqual({
+        subtotalCents: 11500,
+        discountCents: 1150,
+        shippingCents: 0,
+        totalCents: 10350,
+      })
+    })
+
     it('rechaza cupones inexistentes y no permite combinar cupones en un solo código', () => {
       expect(errorCodeOf(() => calculatePricing([line(SLEEVE, 1)], 'DESCUENTO50'))).toBe('INVALID_COUPON')
       expect(errorCodeOf(() => calculatePricing([line(SLEEVE, 1)], 'SAVE10 FREESHIP'))).toBe('INVALID_COUPON')
