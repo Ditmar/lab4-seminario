@@ -81,6 +81,16 @@ describe('calculatePricing', () => {
       expect(withCoupon.shippingCents).toBe(500)
       expect(withCoupon.totalCents).toBe(10400)
     })
+    
+    it('FREESHIP con 2 Mechanical Keyboard no otorga descuento y el envío sigue siendo $0', () => {
+      // 2 × $60.00 = $120.00
+      const pricing = calculatePricing([line(KEYBOARD, 2)], 'FREESHIP')
+
+      expect(pricing.subtotalCents).toBe(12000)
+      expect(pricing.discountCents).toBe(0)
+      expect(pricing.shippingCents).toBe(0)
+      expect(pricing.totalCents).toBe(12000)
+    })
   })
 
   describe('total', () => {
