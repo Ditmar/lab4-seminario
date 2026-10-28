@@ -70,6 +70,15 @@ describe('calculatePricing', () => {
       expect(pricing.totalCents).toBe(2500)
     })
 
+    it('calcula 2 Mechanical Keyboard con cupon FREESHIP', () => {
+      const pricing = calculatePricing([line(KEYBOARD, 2)], 'FREESHIP')
+
+      expect(pricing.subtotalCents).toBe(12000)
+      expect(pricing.discountCents).toBe(0)
+      expect(pricing.shippingCents).toBe(0)
+      expect(pricing.totalCents).toBe(12000)
+    })
+
     it('evalúa el umbral de envío gratis DESPUÉS de aplicar el descuento', () => {
       // 2 × $30.00 + 2 × $25.00 = $110.00
       const cart = [line(SLEEVE, 2), line(MOUSE, 2)]
